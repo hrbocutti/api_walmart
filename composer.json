@@ -1,0 +1,22 @@
+{
+    "name": "dev01/walmart-service",
+    "description": "API Rest Seller to Walmart",
+    "type": "project",
+    "require": {
+        "slim/slim": "^3.8",
+        "monolog/monolog": "^1.23",
+        "illuminate/database": "^5.4",
+        "phpunit/phpunit": "^5.7"
+    },
+    "authors": [
+        {
+            "name": "Higor Bocutti",
+            "email": "webmaster@polyhousestore.com"
+        }
+    ],
+    "autoload":{
+        "psr-4":{
+            "App\\": "src/App"
+        }
+    }
+}
