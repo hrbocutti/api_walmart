@@ -25,18 +25,6 @@ class Routes
             return $res->withStatus(400)->write("Bad Request");
         });
 
-        $app->post('/', function (Request $req,  Response $res, $args = []){
-            return $res->withStatus(400)->write("Bad Request");
-        });
-
-        $app->put('/', function (Request $req,  Response $res, $args = []){
-            return $res->withStatus(400)->write("Bad Request");
-        });
-
-        $app->delete('/', function (Request $req,  Response $res, $args = []){
-            return $res->withStatus(400)->write("Blocked URL");
-        });
-
         /**
          * Endpoint para testar conectividade com o serviço do Seller
          */
@@ -59,14 +47,15 @@ class Routes
             $class = "App\\MVC\\Controller\\". ucwords($request->getAttribute('controller')."Controller");
             $method = $request->getAttribute('method');
             $controller = new $class;
-            $controller->$method();
+            $controller->$method($request->getBody()->getContents());
         });
 
         $app->post('/fulfillment/{controller}/{method}/{marketplaceOrderId}',function (Request $request, Response $response){
             $class = "App\\MVC\\Controller\\". ucwords($request->getAttribute('controller')."Controller");
             $method = $request->getAttribute('method');
+            $marketplaceOrderId = $request->getAttribute('marketplaceOrderId');
             $controller = new $class;
-            $controller->$method();
+            $controller->$method($marketplaceOrderId);
         });
 
         /**
