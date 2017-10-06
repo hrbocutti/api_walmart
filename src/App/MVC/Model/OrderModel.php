@@ -6,6 +6,7 @@ use App\Entity\SoulCloudEntity\TbStatusProcessamento;
 use App\Factory\DbFactory;
 use App\MVC\IModel\IOrderModel;
 use App\MVC\Controller\SoulCloudController;
+use App\Utilities\SendEmail;
 
 
 class OrderModel implements IOrderModel
@@ -57,9 +58,35 @@ class OrderModel implements IOrderModel
 
     }
 
-    public function cancelOrder($marketplaceOrderId, $orderId)
+    public function cancelOrder($marketplaceOrderId, $body)
     {
-        // TODO: Implement cancelOrder() method.
+        $db = new DbFactory();
+        $db->fatoryConnection('localhost','poli_gerencia2','root','');
+
+        $orderId = json_decode($body);
+
+        $pedido = TbPedidos::where('id' , '=', $orderId->orderId)->first();
+
+        if (!empty($pedido)){
+            $pedido->status = 'Canceled';
+            $pedido->save();
+        }else{
+            return null;
+        }
+
+        $statusProcessamento = TbStatusProcessamento::where('tb_pedido_id', '=', $orderId->orderId)->first();
+        if(!empty($statusProcessamento)){
+            if ($statusProcessamento->status != 'CANCELADO'){
+                $statusProcessamento->status = 'CANCELADO';
+                $statusProcessamento->save();
+            }
+        }else{
+            return null;
+        }
+        $msg = "Pedido: ".$marketplaceOrderId." Cancelado";
+        $mail = new SendEmail();
+        $mail->send('webmaster@polihouse.com','dgelask8@gmail.com',null, 'Cancelamento de Pedidos Walmart', $msg);
+        return $orderId;
     }
 
 }

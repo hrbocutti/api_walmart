@@ -48,6 +48,14 @@ class OrderController implements IOrderController
     public function cancel($marketplaceOrderId, $body)
     {
         $model = new OrderModel();
-        $model->cancelOrder($marketplaceOrderId, $body);
+        $orderId = $model->cancelOrder($marketplaceOrderId, $body);
+        $view = new OrderView();
+
+        if(!empty($orderId)){
+            $view->render($orderId, 200, null);
+
+        }else{
+            $view->render(null, 500, "Couldn't cancel order, try again !");
+        }
     }
 }
