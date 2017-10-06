@@ -32,13 +32,22 @@ class OrderController implements IOrderController
 
 
 
-    public function confirm($marketplaceOrderId)
+    public function confirm($marketplaceOrderId, $body)
     {
-        // TODO: Implement confirm() method.
+       $model = new OrderModel();
+       $orderId = $model->confirmPayment($marketplaceOrderId, $body);
+       $view = new OrderView();
+       if(!empty($orderId)){
+           $view->render($orderId, 200, null);
+       }else{
+           $view->render(null, 500, "Couldn't confirm the payment, try again !");
+       }
+
     }
 
-    public function cancel($marketplaceOrderId)
+    public function cancel($marketplaceOrderId, $body)
     {
-        // TODO: Implement cancel() method.
+        $model = new OrderModel();
+        $model->cancelOrder($marketplaceOrderId, $body);
     }
 }

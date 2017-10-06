@@ -7,8 +7,8 @@ interface IOrderController
 
     public function create($order);
 
-    public function confirm($marketplaceOrderId);
+    public function confirm($marketplaceOrderId, $body);
 
-    public function cancel($marketplaceOrderId);
+    public function cancel($marketplaceOrderId, $body);
 
 }

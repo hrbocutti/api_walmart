@@ -55,7 +55,7 @@ class Routes
             $method = $request->getAttribute('method');
             $marketplaceOrderId = $request->getAttribute('marketplaceOrderId');
             $controller = new $class;
-            $controller->$method($marketplaceOrderId);
+            $controller->$method($marketplaceOrderId, $request->getBody()->getContents());
         });
 
         /**
