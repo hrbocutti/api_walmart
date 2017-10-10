@@ -11,27 +11,36 @@ use App\MVC\IModel\ISoulCloudModel;
 
 class SoulCloudModel implements ISoulCloudModel
 {
+    protected $host, $database, $user, $password;
+
+    function __construct()
+    {
+        $this->host = "45.56.103.184";
+        $this->database = "poli_gerencia2";
+        $this->user = "house_loja";
+        $this->password = "nxauLMNUevdj7SZR";
+    }
 
     public function buscarPedido($orderNumber)
     {
-        $dbSelect = new DbFactory();
-        $dbSelect->fatoryConnection("localhost", "poli_gerencia2","root", "");
+        $db = new DbFactory();
+        $db->factoryConnection($this->host, $this->database, $this->user, $this->password);
         $pedido = TbPedidos::where("order_number", "=",$orderNumber)->first();
         return $pedido;
     }
 
     public function buscarTodosPedidos()
     {
-        $dbSelect = new DbFactory();
-        $dbSelect->fatoryConnection("localhost", "poli_gerencia2","root", "");
+        $db = new DbFactory();
+        $db->factoryConnection($this->host, $this->database, $this->user, $this->password);
         $pedido = TbPedidos::where('tb_marketplace_id', '=', '10')->first();
         return $pedido;
     }
 
     public function createPedido($order)
     {
-        $dbSelect = new DbFactory();
-        $dbSelect->fatoryConnection("localhost", "poli_gerencia2","root", "");
+        $db = new DbFactory();
+        $db->factoryConnection($this->host, $this->database, $this->user, $this->password);
 
         $clienteNome = $order->clientProfileData->firstName . " " . $order->clientProfileData->lastName;
         $totalPedido = $this->calcularTotalPedido($order);
@@ -66,8 +75,8 @@ class SoulCloudModel implements ISoulCloudModel
     {
         $totalFrete = $this->calcularFrete($order->shippingData->logisticsInfo);
         foreach ($order->items as $orderedItem) {
-            $dbSelect = new DbFactory();
-            $dbSelect->fatoryConnection("localhost", "poli_gerencia2","root", "");
+            $db = new DbFactory();
+            $db->factoryConnection($this->host, $this->database, $this->user, $this->password);
             try {
                 TbPedidoItems::create(array(
                 "shop_id" => $orderedItem->id,
@@ -92,8 +101,8 @@ class SoulCloudModel implements ISoulCloudModel
 
     public function createCliente($id_pedido, $order)
     {
-        $dbSelect = new DbFactory();
-        $dbSelect->fatoryConnection("localhost", "poli_gerencia2","root", "");
+        $db = new DbFactory();
+        $db->factoryConnection($this->host, $this->database, $this->user, $this->password);
         $pfOrPj = (!empty($order->clientProfileData->corporateDocument))? "CNPJ":"CPF";
         $email = $order->clientProfileData->email;
         $numDocumento = (!empty($order->clientProfileData->corporateDocument))? $order->clientProfileData->corporateDocument:$order->clientProfileData->document;
@@ -123,8 +132,8 @@ class SoulCloudModel implements ISoulCloudModel
 
     public function createAddress($id_pedido, $order, $type)
     {
-        $dbSelect = new DbFactory();
-        $dbSelect->fatoryConnection("localhost", "poli_gerencia2","root", "");
+        $db = new DbFactory();
+        $db->factoryConnection($this->host, $this->database, $this->user, $this->password);
         $shippingInfo = $order->shippingData;
         $email = $order->clientProfileData->email;
         $pfOrPj = (!empty($order->clientProfileData->corporateDocument))? "CNPJ":"CPF";
@@ -160,8 +169,8 @@ class SoulCloudModel implements ISoulCloudModel
 
     public function createProcessamento($id_pedido)
     {
-        $dbSelect = new DbFactory();
-        $dbSelect->fatoryConnection("localhost", "poli_gerencia2","root", "");
+        $db = new DbFactory();
+        $db->factoryConnection($this->host, $this->database, $this->user, $this->password);
 
         $idMkt = 10;
         try{
@@ -195,8 +204,8 @@ class SoulCloudModel implements ISoulCloudModel
 
     public function atualizaStatusProcessamento($id, $status)
     {
-        $dbSelect = new DbFactory();
-        $dbSelect->fatoryConnection("localhost", "poli_gerencia2","root", "");
+        $db = new DbFactory();
+        $db->factoryConnection($this->host, $this->database, $this->user, $this->password);
         $statusCode = null; // para retornar sucesso
         try{
             $process = TbStatusProcessamento::where('tb_pedido_id', $id)->first();
@@ -228,7 +237,7 @@ class SoulCloudModel implements ISoulCloudModel
     public function baixaEstoque($sku, $qty)
     {
         $dbSelect = new DbFactory();
-        $dbSelect->fatoryLocal();
+        $dbSelect->factoryLocal();
         $item = TbPostingdaysNs::where('sku', '=', $sku)->first();
         $qtyAtual = $item->qty;
         $item->qty = $qtyAtual - $qty;
@@ -254,8 +263,8 @@ class SoulCloudModel implements ISoulCloudModel
             //validate if has stock
             $sku = $item->id;
 
-            $dbSelect = new DbFactory();
-            $dbSelect->fatoryConnection("localhost", "db_frete","root", "");
+            $db = new DbFactory();
+            $db->factoryLocal();
             $product = TbPostingdaysNs::where('sku', '=', $sku)->first();
 
             if (empty($product)){

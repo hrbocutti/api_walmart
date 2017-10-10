@@ -13,10 +13,20 @@ use App\Utilities\SendEmail;
 
 class OrderModel implements IOrderModel
 {
+    protected $host, $database, $user, $password;
+
+    function __construct()
+    {
+       $this->host = "45.56.103.184";
+       $this->database = "poli_gerencia2";
+       $this->user = "house_loja";
+       $this->password = "nxauLMNUevdj7SZR";
+    }
+
     public function findOrder($marketplaceOrderId)
     {
         $db = new DbFactory();
-        $db->fatoryConnection('localhost','poli_gerencia2','root','');
+        $db->factoryConnection($this->host, $this->database, $this->user, $this->password);
 
         $pedido = TbPedidos::where('order_number', '=', $marketplaceOrderId)->first();
         $id = array("orderId" => (String) $pedido["id"]);
@@ -33,7 +43,7 @@ class OrderModel implements IOrderModel
     public function confirmPayment($marketplaceOrderId, $body)
     {
         $db = new DbFactory();
-        $db->fatoryConnection('localhost','poli_gerencia2','root','');
+        $db->factoryConnection($this->host, $this->database, $this->user, $this->password);
 
         $orderId = json_decode($body);
         if(empty((array)$orderId)){
@@ -74,7 +84,7 @@ class OrderModel implements IOrderModel
     public function cancelOrder($marketplaceOrderId, $body)
     {
         $db = new DbFactory();
-        $db->fatoryConnection('localhost','poli_gerencia2','root','');
+        $db->factoryConnection($this->host, $this->database, $this->user, $this->password);
 
         $orderId = json_decode($body);
 
@@ -102,7 +112,7 @@ class OrderModel implements IOrderModel
                 $this->extornoEstoque($body);
                 $msg = "Pedido: ".$marketplaceOrderId." Cancelado";
                 $mail = new SendEmail();
-                $mail->send('webmaster@polihouse.com','dgelask8@gmail.com',null, 'Cancelamento de Pedidos Walmart', $msg);
+                $mail->send('webmaster@polihouse.com','atendimento@polihouse.com.br',null, 'Cancelamento de Pedidos Walmart', $msg);
             }
         }else{
             return null;
@@ -113,7 +123,7 @@ class OrderModel implements IOrderModel
     public function extornoEstoque($body)
     {
         $db = new DbFactory();
-        $db->fatoryConnection('localhost','poli_gerencia2','root','');
+        $db->factoryConnection($this->host, $this->database, $this->user, $this->password);
         $orderId = json_decode($body);
         $items = TbPedidoItems::where('tb_pedido_id', '=', $orderId->orderId)->get();
         foreach ($items as $item) {
@@ -125,7 +135,7 @@ class OrderModel implements IOrderModel
     {
         try{
             $db = new DbFactory();
-            $db->fatoryLocal();
+            $db->factoryLocal();
 
             $item = TbPostingdaysNs::where('sku', '=', $sku)->first();
             $item->qty = $item->qty + $qty;

@@ -16,7 +16,7 @@ class FulfillmentPreviewModel
         $view = new FullfillmentPreviewView();
 
         $dbSelect = new DbFactory();
-        $dbSelect->fatoryLocal();
+        $dbSelect->factoryLocal();
 
         if(empty($items)){
             header("Error", null, 400);

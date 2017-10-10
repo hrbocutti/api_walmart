@@ -22,7 +22,7 @@ class DbFactory
     /**
      * Factory de Conexao Local
      */
-    public function fatoryLocal()
+    public function factoryLocal()
     {
         // Database information
         $settings = array(
@@ -30,7 +30,7 @@ class DbFactory
             'host' => 'localhost',
             'database' => 'db_frete',
             'username' => 'root',
-            'password' => '',
+            'password' => 'kwer3214',
             'collation' => 'utf8_general_ci',
             'prefix' => ''
         );
@@ -52,7 +52,7 @@ class DbFactory
      * @param $usr_name
      * @param $password
      */
-    public function fatoryConnection($host, $data_base, $usr_name, $password)
+    public function factoryConnection($host, $data_base, $usr_name, $password)
     {
         // Database information
         $settings = array(
