@@ -10,6 +10,15 @@ namespace App\Factory;
  */
 class DbFactory
 {
+    protected $resolver = null;
+
+    function __construct()
+    {
+        if ($this->resolver != null){
+            $this->resolver = null;
+        }
+    }
+
     /**
      * Factory de Conexao Local
      */
@@ -30,10 +39,10 @@ class DbFactory
         $container = new \Illuminate\Container\Container;
         $connFactory = new \Illuminate\Database\Connectors\ConnectionFactory($container);
         $conn = $connFactory->make($settings);
-        $resolver = new \Illuminate\Database\ConnectionResolver();
-        $resolver->addConnection('default', $conn);
-        $resolver->setDefaultConnection('default');
-        \Illuminate\Database\Eloquent\Model::setConnectionResolver($resolver);
+        $this->resolver = new \Illuminate\Database\ConnectionResolver();
+        $this->resolver->addConnection('default', $conn);
+        $this->resolver->setDefaultConnection('default');
+        \Illuminate\Database\Eloquent\Model::setConnectionResolver($this->resolver);
     }
 
     /**
@@ -60,9 +69,9 @@ class DbFactory
         $container = new \Illuminate\Container\Container;
         $connFactory = new \Illuminate\Database\Connectors\ConnectionFactory($container);
         $conn = $connFactory->make($settings);
-        $resolver = new \Illuminate\Database\ConnectionResolver();
-        $resolver->addConnection('default', $conn);
-        $resolver->setDefaultConnection('default');
-        \Illuminate\Database\Eloquent\Model::setConnectionResolver($resolver);
+        $this->resolver = new \Illuminate\Database\ConnectionResolver();
+        $this->resolver->addConnection('default', $conn);
+        $this->resolver->setDefaultConnection('default');
+        \Illuminate\Database\Eloquent\Model::setConnectionResolver($this->resolver);
     }
 }

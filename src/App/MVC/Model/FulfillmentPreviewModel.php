@@ -18,43 +18,53 @@ class FulfillmentPreviewModel
         $dbSelect = new DbFactory();
         $dbSelect->fatoryLocal();
 
+        if(empty($items)){
+            header("Error", null, 400);
+            echo json_encode(array("summary" => "Invalid body"));
+            die();
+        }
+
         $produtos = array();
         foreach ($items as $item) {
             $sku = $item['id'];
             $qty = $item['quantity'];
 
-            $itemInfos = TbPostingdaysNs::where('sku', $sku)->first();
-            if(empty($itemInfos)){
-                return null;
+            if($qty == 0){
+                header("Error", null, 400);
+                echo json_encode(array("summary" => "Quantity cannot be 0 or null"));
+                die();
             }
-            $itemInfos['sku'] = $sku;
-            $itemInfos['qty'] = $qty;
-            $itemInfos['postalCode'] = $postalCode;
-            $cotacaoByItem = $this->cotacaoIntelipost($itemInfos);
 
-            $produtos = $cotacaoByItem;
-            $itemsWithPrice[] = array(
+            $itemInfos = TbPostingdaysNs::where('sku', $sku)->first();
+            if(!empty($itemInfos)){
+                $itemInfos['sku'] = $sku;
+                $itemInfos['postalCode'] = $postalCode;
+                $cotacaoByItem = $this->cotacaoIntelipost($itemInfos);
+
+                $produtos = $cotacaoByItem;
+                $itemsWithPrice[] = array(
                     "id" => $sku,
-                    "quantity" => $qty,
+                    "quantity" => ($qty > $itemInfos['qty'])? $itemInfos['qty']:$qty,
                     "price" => $itemInfos['preco_netshoes'],
                     "listPrice" => $itemInfos['preco_netshoes']
-            );
+                );
 
-            $itemsWithStock[] = array(
-                "itemId" => "ABC3534411",
-                "inventoryAvailable" => $qty,
-                "quantity" => $qty,
-                "categories" => $produtos
-            );
+                $itemsWithStock[] = array(
+                    "itemId" => $sku,
+                    "inventoryAvailable" => $itemInfos['qty'],
+                    "quantity" => ($qty > $itemInfos['qty'])? $itemInfos['qty']:$qty,
+                    "categories" => ($itemInfos['qty'] <= 0)? array():$produtos
+                );
+            }
+
         }
 
         $quotation = array(
-                    "items" => $itemsWithPrice,
+                    "items" => (!empty($itemsWithPrice))? $itemsWithPrice:array(),
                     "country" => "BRA",
                     "postalCode" => $postalCode,
-                    "shipmentInfos" => $itemsWithStock
+                    "shipmentInfos" => (!empty($itemsWithStock))? $itemsWithStock:array()
         );
-
         return $quotation;
     }
 
@@ -71,7 +81,8 @@ class FulfillmentPreviewModel
         );
 
         $intelipost = new CotacaoModel();
-        return $intelipost->cotacao($dados, $itemInfos['postalCode'], $itemInfos['posting_days']);
+        $cotacao  = $intelipost->cotacao($dados, $itemInfos['postalCode'], $itemInfos['posting_days']);
+        return $cotacao;
     }
 
 }

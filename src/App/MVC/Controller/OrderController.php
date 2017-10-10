@@ -13,6 +13,11 @@ class OrderController implements IOrderController
     public function create($order)
     {
         $order = json_decode($order);
+        if (empty($order)){
+            header("HTTP/1.1 400", null, 400);
+            echo json_encode(array("summary" => "Invalid body"));
+            die();
+        }
         $model = new OrderModel();
         $pedidoId = $model->findOrder($order->marketplaceOrderId);
         if (!empty($pedidoId)){

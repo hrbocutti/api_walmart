@@ -34,8 +34,11 @@ class CotacaoModel
     private function tratarResposta($products, $response)
     {
         //$quotations = json_decode($response);
-
+        $options = array();
         $quotations = json_decode($response);
+        if($quotations->status == "ERROR"){
+            return $options;
+        }
 
         $options = array();
 
@@ -43,9 +46,9 @@ class CotacaoModel
             $options[] = array(
                                 "id" => $quote->delivery_method_name,
                                 "name" => $quote->delivery_method_type,
-                                "shippingEstimate" => $quote->delivery_estimate_business_days." dias",
+                                "shippingEstimate" => $quote->delivery_estimate_business_days."bd",
                                 "price" => $quote->final_shipping_cost,
-                                "scheduledDeliveries" => null
+                                "scheduledDeliveries" => array()
                               );
         }
         return $options;

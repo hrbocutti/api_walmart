@@ -5,6 +5,8 @@ use App\Entity\SoulCloudEntity\TbPedidoAddress;
 use App\Entity\SoulCloudEntity\TbPedidoItems;
 use App\Entity\SoulCloudEntity\TbPedidos;
 use App\Entity\SoulCloudEntity\TbStatusProcessamento;
+use App\Entity\TbPostingdaysNs;
+use App\Factory\DbFactory;
 use App\MVC\IModel\ISoulCloudModel;
 
 class SoulCloudModel implements ISoulCloudModel
@@ -12,18 +14,25 @@ class SoulCloudModel implements ISoulCloudModel
 
     public function buscarPedido($orderNumber)
     {
+        $dbSelect = new DbFactory();
+        $dbSelect->fatoryConnection("localhost", "poli_gerencia2","root", "");
         $pedido = TbPedidos::where("order_number", "=",$orderNumber)->first();
         return $pedido;
     }
 
     public function buscarTodosPedidos()
     {
+        $dbSelect = new DbFactory();
+        $dbSelect->fatoryConnection("localhost", "poli_gerencia2","root", "");
         $pedido = TbPedidos::where('tb_marketplace_id', '=', '10')->first();
         return $pedido;
     }
 
     public function createPedido($order)
     {
+        $dbSelect = new DbFactory();
+        $dbSelect->fatoryConnection("localhost", "poli_gerencia2","root", "");
+
         $clienteNome = $order->clientProfileData->firstName . " " . $order->clientProfileData->lastName;
         $totalPedido = $this->calcularTotalPedido($order);
         $idMkt = 10;
@@ -57,20 +66,24 @@ class SoulCloudModel implements ISoulCloudModel
     {
         $totalFrete = $this->calcularFrete($order->shippingData->logisticsInfo);
         foreach ($order->items as $orderedItem) {
+            $dbSelect = new DbFactory();
+            $dbSelect->fatoryConnection("localhost", "poli_gerencia2","root", "");
             try {
-                $items = TbPedidoItems::create(array(
-                    "shop_id" => $orderedItem->id,
-                    "name" => "No Named",
-                    "sku" => $orderedItem->id,
-                    "qty" => $orderedItem->quantity,
-                    "mktplace_sku" => $orderedItem->id,
-                    "item_price" => $orderedItem->price,
-                    "item_paid" => $orderedItem->price,
-                    "tax_amount" => 0,
-                    "tax_percent" => 0,
-                    "shipping_amount" => $totalFrete,
-                    "tb_pedido_id" => $id_pedido));
+                TbPedidoItems::create(array(
+                "shop_id" => $orderedItem->id,
+                "name" => "No Named",
+                "sku" => $orderedItem->id,
+                "qty" => $orderedItem->quantity,
+                "mktplace_sku" => $orderedItem->id,
+                "item_price" => $orderedItem->price,
+                "item_paid" => $orderedItem->price,
+                "tax_amount" => 0,
+                "tax_percent" => 0,
+                "shipping_amount" => $totalFrete,
+                "tb_pedido_id" => $id_pedido));
+                $this->baixaEstoque($orderedItem->id, $orderedItem->quantity);
             } catch (\Exception $e) {
+                echo $e;
                 header("HTTP/1.1". $e->getCode() ." ".$e->getMessage());
                 die();
             }
@@ -79,9 +92,11 @@ class SoulCloudModel implements ISoulCloudModel
 
     public function createCliente($id_pedido, $order)
     {
-        $pfOrPj = ($order->clientProfileData->corporateDocument != null)? "CNPJ":"CPF";
+        $dbSelect = new DbFactory();
+        $dbSelect->fatoryConnection("localhost", "poli_gerencia2","root", "");
+        $pfOrPj = (!empty($order->clientProfileData->corporateDocument))? "CNPJ":"CPF";
         $email = $order->clientProfileData->email;
-        $numDocumento = ($order->clientProfileData->corporateDocument != null)? $order->clientProfileData->corporateDocument:$order->clientProfileData->document;
+        $numDocumento = (!empty($order->clientProfileData->corporateDocument))? $order->clientProfileData->corporateDocument:$order->clientProfileData->document;
 
         if ($pfOrPj == "CPF"){
             $clienteName = $order->clientProfileData->firstName . " " . $order->clientProfileData->lastName;
@@ -92,24 +107,27 @@ class SoulCloudModel implements ISoulCloudModel
         }
 
         try{
-            $cliente = TbCliente::create(array(
-                "nome" => utf8_decode($clienteName),
-                "cpf" => $numDocumento,
-                "email" => $email,
-                "telefone" => $phone,
-                "telefone_contato" => $phone,
-                "tb_pedido_id" => $id_pedido));
+            TbCliente::create(array(
+            "nome" => utf8_decode($clienteName),
+            "cpf" => $numDocumento,
+            "email" => $email,
+            "telefone" => $phone,
+            "telefone_contato" => $phone,
+            "tb_pedido_id" => $id_pedido));
         }catch(\Exception $e){
-            header("HTTP/1.1". $e->getCode() ." ".$e->getMessage());
+            echo $e->getMessage();
+            //header("HTTP/1.1". $e->getCode() ." ".$e->getMessage());
             die();
         }
     }
 
     public function createAddress($id_pedido, $order, $type)
     {
+        $dbSelect = new DbFactory();
+        $dbSelect->fatoryConnection("localhost", "poli_gerencia2","root", "");
         $shippingInfo = $order->shippingData;
         $email = $order->clientProfileData->email;
-        $pfOrPj = ($order->clientProfileData->corporateDocument != null)? "CNPJ":"CPF";
+        $pfOrPj = (!empty($order->clientProfileData->corporateDocument))? "CNPJ":"CPF";
 
         if ($pfOrPj == "CPF"){
             $phone = $order->clientProfileData->phone;
@@ -120,7 +138,6 @@ class SoulCloudModel implements ISoulCloudModel
         $clienteName = $order->shippingData->address->receiverName;
 
         $zipCode = str_replace("-", "", $shippingInfo->address->postalCode);
-
         try{
             $addressShipping = TbPedidoAddress::create(array(
                 "nome" => utf8_decode($clienteName),
@@ -143,12 +160,15 @@ class SoulCloudModel implements ISoulCloudModel
 
     public function createProcessamento($id_pedido)
     {
+        $dbSelect = new DbFactory();
+        $dbSelect->fatoryConnection("localhost", "poli_gerencia2","root", "");
+
         $idMkt = 10;
         try{
-            $processamento = TbStatusProcessamento::create(array(
-                "status" => "waiting",
-                "tb_pedido_id" => $id_pedido,
-                "tb_marketplace_id" => $idMkt));
+            TbStatusProcessamento::create(array(
+            "status" => "waiting",
+            "tb_pedido_id" => $id_pedido,
+            "tb_marketplace_id" => $idMkt));
         }catch(\Exception $e){
             header("HTTP/1.1". $e->getCode() ." ".$e->getMessage());
             die();
@@ -176,7 +196,7 @@ class SoulCloudModel implements ISoulCloudModel
     public function atualizaStatusProcessamento($id, $status)
     {
         $dbSelect = new DbFactory();
-        $dbSelect->fatoryConnection("45.56.103.184", "poli_gerencia2","house_loja", "nxauLMNUevdj7SZR");
+        $dbSelect->fatoryConnection("localhost", "poli_gerencia2","root", "");
         $statusCode = null; // para retornar sucesso
         try{
             $process = TbStatusProcessamento::where('tb_pedido_id', $id)->first();
@@ -203,5 +223,64 @@ class SoulCloudModel implements ISoulCloudModel
 
         }
         return $total;
+    }
+
+    public function baixaEstoque($sku, $qty)
+    {
+        $dbSelect = new DbFactory();
+        $dbSelect->fatoryLocal();
+        $item = TbPostingdaysNs::where('sku', '=', $sku)->first();
+        $qtyAtual = $item->qty;
+        $item->qty = $qtyAtual - $qty;
+        $item->save();
+    }
+
+    public function validadeOrder($order)
+    {
+        if (empty($order)){
+            header("HTTP/1.1 400", null, 400);
+            echo json_encode(array("summary" => "Invalid body"));
+            die();
+        }
+
+        $items = $order->items;
+        foreach ($items as $item) {
+            if ($item->quantity <= 0 ){
+                header("HTTP/1.1 400", null, 400);
+                echo json_encode(array("summary" => "Invalid Body, quantity cannot be less than 0 !"));
+                die();
+            }
+
+            //validate if has stock
+            $sku = $item->id;
+
+            $dbSelect = new DbFactory();
+            $dbSelect->fatoryConnection("localhost", "db_frete","root", "");
+            $product = TbPostingdaysNs::where('sku', '=', $sku)->first();
+
+            if (empty($product)){
+                header("HTTP/1.1 400", null, 400);
+                echo json_encode(array("summary" => "Invalid body"));
+                die();
+            }
+
+            if (gettype($item->quantity) != "integer"){
+                header("HTTP/1.1 400", null, 400);
+                echo json_encode(array("summary" => "Invalid body"));
+                die();
+            }
+
+            if($product->qty <= 0 ){
+                header("HTTP/1.1 400", null, 400);
+                echo json_encode(array("summary" => "Quantity available is not the quantity requested !"));
+                die();
+            }
+
+            if($item->quantity > $product->qty){
+                header("HTTP/1.1 400", null, 400);
+                echo json_encode(array("summary" => "Quantity available is not the quantity requested !"));
+                die();
+            }
+        }
     }
 }

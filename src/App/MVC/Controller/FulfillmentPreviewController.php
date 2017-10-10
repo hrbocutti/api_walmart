@@ -10,12 +10,6 @@ class FulfillmentPreviewController
         $model = new FulfillmentPreviewModel();
         $quotation = $model->cotacao($request);
         $view = new FullfillmentPreviewView();
-
-        if(empty($quotation)){
-            $msg = 'Product not found';
-            $view->render(null, 500, $msg);
-        }
-
         $view->render($quotation, 200, null);
     }
 }
