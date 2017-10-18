@@ -30,7 +30,7 @@ class DbFactory
             'host' => 'localhost',
             'database' => 'db_frete',
             'username' => 'root',
-            'password' => '',
+            'password' => 'kwer3214',
             'collation' => 'utf8_general_ci',
             'prefix' => ''
         );

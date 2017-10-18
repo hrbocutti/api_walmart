@@ -17,10 +17,10 @@ class OrderModel implements IOrderModel
 
     function __construct()
     {
-       $this->host = "localhost";
+       $this->host = "45.56.103.184";
        $this->database = "poli_gerencia2";
-       $this->user = "root";
-       $this->password = "";
+       $this->user = "house_loja";
+       $this->password = "nxauLMNUevdj7SZR";
     }
 
     public function findOrder($marketplaceOrderId)
