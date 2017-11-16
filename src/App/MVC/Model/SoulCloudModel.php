@@ -79,7 +79,7 @@ class SoulCloudModel implements ISoulCloudModel
             $db->factoryConnection($this->host, $this->database, $this->user, $this->password);
             try {
                 TbPedidoItems::create(array(
-                "shop_id" => $orderedItem->id,
+                "shop_id" => null,
                 "name" => "No Named",
                 "sku" => $orderedItem->id,
                 "qty" => $orderedItem->quantity,
